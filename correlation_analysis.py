@@ -165,18 +165,6 @@ class CorrelationSection:
             pady=(14, 0)
         )
 
-        tk.Label(
-            self.heat_card,
-            text="Pearson correlation coefficient (r)",
-            bg=S.WHITE,
-            fg=S.MUTED,
-            font=(S.FONT, 8)
-        ).pack(
-            anchor="w",
-            padx=16,
-            pady=(3, 0)
-        )
-
         self.heat_fig = Figure(
             figsize=(6.0, 4.3),
             dpi=95,
@@ -229,6 +217,18 @@ class CorrelationSection:
             anchor="w",
             padx=16,
             pady=(14, 0)
+        )
+
+        tk.Label(
+            self.pair_card,
+            text="Selected pair · Pearson correlation (r)",
+            bg=S.WHITE,
+            fg=S.MUTED,
+            font=(S.FONT, 8)
+        ).pack(
+            anchor="w",
+            padx=16,
+            pady=(3, 0)
         )
 
         controls = tk.Frame(
@@ -437,14 +437,6 @@ class CorrelationSection:
                         else "white"
                     )
                 )
-
-        self.heat_ax.set_title(
-            "Pairwise Pearson r",
-            loc="left",
-            color=S.TEXT,
-            fontsize=8,
-            pad=6
-        )
 
         for spine in self.heat_ax.spines.values():
             spine.set_visible(False)
