@@ -56,6 +56,21 @@ SHORT = {
     "Forest Area (%)": "Forest"
 }
 
+HEATMAP_PALETTES = {
+    "Blue / red": "RdYlBu_r",
+    "Coolwarm": "coolwarm",
+    "Purple / green": "PRGn",
+    "Blue / orange": "PuOr",
+    "Brown / teal": "BrBG",
+    "Pink / green": "PiYG",
+    "Red / gray": "RdGy",
+    "Green / red": "RdYlGn_r",
+    "Spectral": "Spectral_r",
+    "Blue / white / red": "bwr",
+    "High-contrast blue / red": "seismic",
+    "Blue / gray / red": "RdBu_r"
+}
+
 
 def pairwise_corr(x, y):
 
@@ -153,16 +168,59 @@ class CorrelationSection:
             padx=(0, 12)
         )
 
-        tk.Label(
+        heat_header = tk.Frame(
             self.heat_card,
+            bg=S.WHITE
+        )
+
+        heat_header.pack(
+            fill="x",
+            padx=16,
+            pady=(14, 0)
+        )
+
+        tk.Label(
+            heat_header,
             text="Correlation matrix",
             bg=S.WHITE,
             fg=S.TEXT,
             font=(S.FONT, 11, "bold")
+        ).pack(side="left")
+
+        palette_controls = tk.Frame(
+            heat_header,
+            bg=S.WHITE
+        )
+
+        palette_controls.pack(side="right")
+
+        tk.Label(
+            palette_controls,
+            text="Palette",
+            bg=S.WHITE,
+            fg=S.MUTED,
+            font=(S.FONT, 8)
         ).pack(
-            anchor="w",
-            padx=16,
-            pady=(14, 0)
+            side="left",
+            padx=(0, 5)
+        )
+
+        self.heatmap_palette_var = tk.StringVar(
+            value="Blue / red"
+        )
+
+        self.heatmap_palette_combo = ttk.Combobox(
+            palette_controls,
+            textvariable=self.heatmap_palette_var,
+            values=list(HEATMAP_PALETTES),
+            state="readonly",
+            width=14
+        )
+
+        self.heatmap_palette_combo.pack(side="left")
+        self.heatmap_palette_combo.bind(
+            "<<ComboboxSelected>>",
+            self._palette_changed
         )
 
         self.heat_fig = Figure(
@@ -352,6 +410,11 @@ class CorrelationSection:
         if self.df is not None:
             self.draw_pair(self.df)
 
+    def _palette_changed(self, event=None):
+
+        if self.df is not None:
+            self.draw_heatmap(self.df)
+
     def update(self, df):
 
         self.df = df.copy()
@@ -391,7 +454,9 @@ class CorrelationSection:
 
         im = self.heat_ax.imshow(
             matrix,
-            cmap="RdYlBu_r",
+            cmap=HEATMAP_PALETTES[
+                self.heatmap_palette_var.get()
+            ],
             vmin=-1,
             vmax=1,
             aspect="auto"
@@ -442,18 +507,14 @@ class CorrelationSection:
             spine.set_visible(False)
 
         if hasattr(self, "heat_colorbar"):
-
-            try:
-                self.heat_colorbar.remove()
-            except Exception:
-                pass
-
-        self.heat_colorbar = self.heat_fig.colorbar(
-            im,
-            ax=self.heat_ax,
-            fraction=0.046,
-            pad=0.04
-        )
+            self.heat_colorbar.update_normal(im)
+        else:
+            self.heat_colorbar = self.heat_fig.colorbar(
+                im,
+                ax=self.heat_ax,
+                fraction=0.046,
+                pad=0.04
+            )
 
         self.heat_colorbar.ax.tick_params(
             labelsize=7,

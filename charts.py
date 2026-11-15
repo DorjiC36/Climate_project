@@ -3,13 +3,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from styles import (
-    CORAL,
-    TEXT,
-    MUTED,
-    BORDER,
-    WHITE
-)
+import styles as S
 
 
 class ClimateChart:
@@ -19,7 +13,7 @@ class ClimateChart:
         self.fig = Figure(
             figsize=(7.2, 3.2),
             dpi=100,
-            facecolor=WHITE
+            facecolor=S.WHITE
         )
 
         self.ax = self.fig.add_subplot(111)
@@ -40,13 +34,13 @@ class ClimateChart:
 
         self.widget.configure(
             highlightthickness=0,
-            background=WHITE
+            background=S.WHITE
         )
 
     def draw(self, years, values, period_label):
 
         self.ax.clear()
-        self.ax.set_facecolor(WHITE)
+        self.ax.set_facecolor(S.WHITE)
 
         if len(years):
 
@@ -63,7 +57,7 @@ class ClimateChart:
                 self.ax.plot(
                     years,
                     values,
-                    color=CORAL,
+                    color=S.CORAL,
                     linewidth=2.4
                 )
 
@@ -73,7 +67,7 @@ class ClimateChart:
                     years,
                     values,
                     baseline,
-                    color=CORAL,
+                    color=S.CORAL,
                     alpha=0.12
                 )
 
@@ -97,7 +91,7 @@ class ClimateChart:
                     ha="center",
                     va="center",
                     transform=self.ax.transAxes,
-                    color=MUTED
+                    color=S.MUTED
                 )
 
         else:
@@ -109,25 +103,25 @@ class ClimateChart:
                 ha="center",
                 va="center",
                 transform=self.ax.transAxes,
-                color=MUTED
+                color=S.MUTED
             )
 
         self.ax.grid(
             axis="y",
             linestyle=(0, (2, 3)),
             linewidth=0.7,
-            color=BORDER
+            color=S.BORDER
         )
 
         self.ax.spines["top"].set_visible(False)
         self.ax.spines["right"].set_visible(False)
         self.ax.spines["left"].set_visible(False)
 
-        self.ax.spines["bottom"].set_color(BORDER)
+        self.ax.spines["bottom"].set_color(S.BORDER)
 
         self.ax.tick_params(
             axis="both",
-            colors=MUTED,
+            colors=S.MUTED,
             labelsize=8,
             length=0,
             pad=8
@@ -135,7 +129,7 @@ class ClimateChart:
 
         self.ax.set_ylabel(
             "Average temperature (°C)",
-            color=MUTED,
+            color=S.MUTED,
             fontsize=8
         )
 
@@ -143,7 +137,7 @@ class ClimateChart:
             f"Annual average · {period_label}",
             loc="left",
             fontsize=9,
-            color=TEXT,
+            color=S.TEXT,
             pad=8
         )
 

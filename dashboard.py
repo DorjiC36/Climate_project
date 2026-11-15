@@ -24,7 +24,9 @@ class ClimateLensApp(
         self.df = load_dataset()
 
         self.period = "All"
+        self.active_page = "overview"
         self.filtered = self.df.copy()
+        self._table_sort_ascending = False
 
         self._style()
         self._build()

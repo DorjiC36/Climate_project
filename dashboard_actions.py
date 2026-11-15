@@ -13,6 +13,38 @@ import styles as S
 
 class DashboardActionsMixin:
 
+    def toggle_theme(self):
+
+        self.period = self.range_var.get()
+        active_page = self.active_page
+
+        correlation = self.correlation_section
+        correlation_state = (
+            correlation.heatmap_palette_var.get(),
+            correlation.x_var.get(),
+            correlation.y_var.get()
+        )
+
+        S.set_dark_mode(not S.DARK_MODE)
+        self.canvas.unbind_all("<MouseWheel>")
+
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        self._style()
+        self._build()
+
+        self.correlation_section.heatmap_palette_var.set(
+            correlation_state[0]
+        )
+        self.correlation_section.x_var.set(correlation_state[1])
+        self.correlation_section.y_var.set(correlation_state[2])
+
+        if active_page == "findings":
+            self.show_findings()
+
+        self.refresh()
+
     def on_period(self):
 
         self.period = self.range_var.get()
@@ -57,6 +89,7 @@ class DashboardActionsMixin:
         # UPDATE CORRELATION ANALYSIS
 
         self.correlation_section.update(view)
+        self.findings_section.update(view, self.period)
 
         # SUMMARY CARDS
 
@@ -195,7 +228,7 @@ class DashboardActionsMixin:
 
         summary = country_summary(df).sort_values(
             "temperature",
-            ascending=False
+            ascending=self._table_sort_ascending
         )
 
         for _, r in summary.iterrows():
@@ -282,11 +315,5 @@ class DashboardActionsMixin:
 
     def sort_table(self):
 
-        current = self.filtered.copy()
-
-        sorted_data = current.sort_values(
-            "Avg Temperature (°C)",
-            ascending=False
-        )
-
-        self.populate_table(sorted_data)
+        self._table_sort_ascending = not self._table_sort_ascending
+        self.populate_table(self.filtered)

@@ -4,12 +4,54 @@ import webbrowser
 
 from charts import ClimateChart
 from correlation_analysis import CorrelationSection
+from research_findings import ResearchFindingsSection
 import styles as S
 
 SOURCE_URL = "https://climateknowledgeportal.worldbank.org/"
 
 
 class DashboardLayoutMixin:
+
+    def show_overview(self):
+
+        self.findings_page.pack_forget()
+        self.overview_page.pack(fill="both", expand=True)
+        self.root.update_idletasks()
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        self.canvas.yview_moveto(0)
+        self.active_page = "overview"
+        self.nav_label.configure(
+            bg=S.SIDEBAR_HI,
+            fg="white",
+            font=(S.FONT, 10, "bold")
+        )
+        self.findings_nav.configure(
+            bg=S.SIDEBAR,
+            fg="#AFC5BE",
+            font=(S.FONT, 10)
+        )
+
+
+    def show_findings(self):
+
+        self.overview_page.pack_forget()
+        self.findings_page.pack(fill="both", expand=True)
+        self.root.update_idletasks()
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        self.canvas.yview_moveto(0)
+        self.active_page = "findings"
+
+        self.nav_label.configure(
+            bg=S.SIDEBAR,
+            fg="#AFC5BE",
+            font=(S.FONT, 10)
+        )
+        self.findings_nav.configure(
+            bg=S.SIDEBAR_HI,
+            fg="white",
+            font=(S.FONT, 10, "bold")
+        )
+
 
     def _style(self):
 
@@ -42,15 +84,29 @@ class DashboardLayoutMixin:
 
         style.map(
             "Treeview",
-            background=[("selected", "#DDEFE5")],
+            background=[("selected", S.SELECTED)],
             foreground=[("selected", S.TEXT)]
         )
 
         style.configure(
+            "TCombobox",
+            fieldbackground=S.WHITE,
+            background=S.PALE,
+            foreground=S.TEXT,
+            arrowcolor=S.TEXT
+        )
+
+        style.map(
+            "TCombobox",
+            fieldbackground=[("readonly", S.WHITE)],
+            foreground=[("readonly", S.TEXT)]
+        )
+
+        style.configure(
             "Horizontal.TProgressbar",
-            troughcolor="#DDE4DE",
+            troughcolor=S.PROGRESS_TROUGH,
             background=S.MINT,
-            bordercolor="#DDE4DE"
+            bordercolor=S.PROGRESS_TROUGH
         )
 
         for name, color in [
@@ -142,21 +198,48 @@ class DashboardLayoutMixin:
             padx=26
         )
 
-        self.nav_label = tk.Label(
+        self.nav_label = tk.Button(
             self.sidebar,
-            text="▦   Overview        ●",
+            text="▦   Overview",
+            command=self.show_overview,
             bg=S.SIDEBAR_HI,
             fg="white",
             font=(S.FONT, 10, "bold"),
             anchor="w",
             padx=14,
-            pady=12
+            pady=12,
+            relief="flat",
+            activebackground=S.SIDEBAR_HI,
+            activeforeground="white",
+            cursor="hand2"
         )
 
         self.nav_label.pack(
             fill="x",
             padx=14,
-            pady=(10, 24)
+            pady=(10, 2)
+        )
+
+        self.findings_nav = tk.Button(
+            self.sidebar,
+            text="▤   Research findings",
+            command=self.show_findings,
+            bg=S.SIDEBAR,
+            fg="#AFC5BE",
+            font=(S.FONT, 10),
+            anchor="w",
+            padx=14,
+            pady=12,
+            relief="flat",
+            activebackground=S.SIDEBAR_HI,
+            activeforeground="white",
+            cursor="hand2"
+        )
+
+        self.findings_nav.pack(
+            fill="x",
+            padx=14,
+            pady=(0, 24)
         )
 
         tk.Label(
@@ -347,8 +430,18 @@ class DashboardLayoutMixin:
             )
         )
 
-        pad = tk.Frame(
+        self.overview_page = tk.Frame(
             self.content,
+            bg=S.BG
+        )
+
+        self.overview_page.pack(
+            fill="both",
+            expand=True
+        )
+
+        pad = tk.Frame(
+            self.overview_page,
             bg=S.BG
         )
 
@@ -426,7 +519,7 @@ class DashboardLayoutMixin:
             pady=(0, 4)
         )
 
-        self.range_var = tk.StringVar(value="All")
+        self.range_var = tk.StringVar(value=self.period)
 
         view_selector = ttk.Combobox(
             tools,
@@ -450,6 +543,26 @@ class DashboardLayoutMixin:
         self.range_var.trace_add(
             "write",
             lambda *_: self.on_period()
+        )
+
+        tk.Button(
+            tools,
+            text="\u2600" if S.DARK_MODE else "\u263E",
+            command=self.toggle_theme,
+            bg=S.BG,
+            fg=S.GOLD if S.DARK_MODE else S.TEXT,
+            activebackground=S.PALE,
+            activeforeground=S.GOLD if S.DARK_MODE else S.TEXT,
+            relief="flat",
+            bd=0,
+            highlightthickness=0,
+            font=(S.FONT, 16),
+            padx=8,
+            pady=4,
+            cursor="hand2"
+        ).pack(
+            side="left",
+            padx=(0, 8)
         )
 
         tk.Button(
@@ -877,8 +990,20 @@ class DashboardLayoutMixin:
             "renew"
         )
 
-        self.tree = ttk.Treeview(
+        tablebody = tk.Frame(
             tablecard,
+            bg=S.WHITE
+        )
+
+        tablebody.pack(
+            fill="both",
+            expand=True,
+            padx=15,
+            pady=(0, 12)
+        )
+
+        self.tree = ttk.Treeview(
+            tablebody,
             columns=cols,
             show="headings",
             height=5
@@ -907,11 +1032,23 @@ class DashboardLayoutMixin:
                 anchor="w"
             )
 
+        scrollbar = ttk.Scrollbar(
+            tablebody,
+            orient="vertical",
+            command=self.tree.yview
+        )
+
+        self.tree.configure(yscrollcommand=scrollbar.set)
+
         self.tree.pack(
+            side="left",
             fill="both",
-            expand=True,
-            padx=15,
-            pady=(0, 12)
+            expand=True
+        )
+
+        scrollbar.pack(
+            side="right",
+            fill="y"
         )
 
         self.tree.bind(
@@ -1054,6 +1191,25 @@ class DashboardLayoutMixin:
         # CORRELATION ANALYSIS SECTION
 
         self.correlation_section = CorrelationSection(pad)
+
+        self.findings_page = tk.Frame(
+            self.content,
+            bg=S.BG
+        )
+
+        findings_pad = tk.Frame(
+            self.findings_page,
+            bg=S.BG
+        )
+
+        findings_pad.pack(
+            fill="both",
+            expand=True,
+            padx=34,
+            pady=26
+        )
+
+        self.findings_section = ResearchFindingsSection(findings_pad)
 
         # FOOTER
 
