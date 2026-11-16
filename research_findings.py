@@ -1,5 +1,3 @@
-import tkinter as tk
-
 import numpy as np
 from scipy.stats import pearsonr
 
@@ -317,6 +315,8 @@ def build_findings(df, period):
 class ResearchFindingsSection:
 
     def __init__(self, parent):
+        import tkinter as tk
+
         self.frame = tk.Frame(parent, bg=S.BG)
         self.frame.pack(fill="x", pady=(0, 16))
 

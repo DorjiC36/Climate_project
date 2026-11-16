@@ -26,15 +26,20 @@ REQUIRED = [
 
 def load_dataset(path=DEFAULT_DATA):
 
-    path = Path(path)
+    if hasattr(path, "read"):
+        source = path
+    else:
+        path = Path(path)
 
-    if not path.exists():
-        raise FileNotFoundError(
-            f"Dataset not found: {path}"
-        )
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Dataset not found: {path}"
+            )
+
+        source = path
 
     df = pd.read_csv(
-        path,
+        source,
         encoding="utf-8-sig",
         on_bad_lines="error"
     )
